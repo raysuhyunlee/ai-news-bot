@@ -214,18 +214,62 @@ class DiscordNotifier:
 
         return sections
 
-    def _batch_embeds(self, embeds: List[Dict[str, Any]], batch_size: int = 10) -> List[List[Dict[str, Any]]]:
+    @staticmethod
+    def _embed_length(embed: Dict[str, Any]) -> int:
         """
-        Batch embeds to respect Discord's limit of 10 embeds per message.
+        Compute an embed's character length the way Discord counts it
+        toward the 6000-char-per-message total.
+        """
+        length = 0
+        length += len(embed.get("title", "") or "")
+        length += len(embed.get("description", "") or "")
+        footer = embed.get("footer") or {}
+        length += len(footer.get("text", "") or "")
+        author = embed.get("author") or {}
+        length += len(author.get("name", "") or "")
+        for field in embed.get("fields", []) or []:
+            length += len(field.get("name", "") or "")
+            length += len(field.get("value", "") or "")
+        return length
+
+    def _batch_embeds(
+        self,
+        embeds: List[Dict[str, Any]],
+        batch_size: int = 10,
+        max_total_chars: int = 6000,
+    ) -> List[List[Dict[str, Any]]]:
+        """
+        Batch embeds to respect Discord's limits: at most 10 embeds per
+        message AND at most 6000 characters summed across all embeds in a
+        single message.
 
         Args:
             embeds: List of all embeds
             batch_size: Maximum embeds per batch (Discord limit is 10)
+            max_total_chars: Maximum summed embed chars per batch (Discord limit is 6000)
 
         Returns:
             List of embed batches
         """
-        batches = []
-        for i in range(0, len(embeds), batch_size):
-            batches.append(embeds[i:i + batch_size])
+        batches: List[List[Dict[str, Any]]] = []
+        current: List[Dict[str, Any]] = []
+        current_chars = 0
+
+        for embed in embeds:
+            embed_chars = self._embed_length(embed)
+
+            if current and (
+                len(current) >= batch_size
+                or current_chars + embed_chars > max_total_chars
+            ):
+                batches.append(current)
+                current = []
+                current_chars = 0
+
+            current.append(embed)
+            current_chars += embed_chars
+
+        if current:
+            batches.append(current)
+
         return batches
