@@ -30,9 +30,9 @@ class DiscordNotifier:
             avatar_url: Optional bot avatar URL
             timeout: Request timeout in seconds
         """
-        self.webhook_url = webhook_url or os.getenv("DISCORD_WEBHOOK_URL")
-        self.username = username or os.getenv("DISCORD_USERNAME", "AI News Bot")
-        self.avatar_url = avatar_url or os.getenv("DISCORD_AVATAR_URL")
+        self.webhook_url = webhook_url or os.getenv("DISCORD_WEBHOOK_URL") or None
+        self.username = username or os.getenv("DISCORD_USERNAME") or "AI News Bot"
+        self.avatar_url = avatar_url or os.getenv("DISCORD_AVATAR_URL") or None
         self.timeout = timeout
 
         if not self.webhook_url:
