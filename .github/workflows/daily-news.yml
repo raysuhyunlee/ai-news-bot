@@ -70,6 +70,11 @@ jobs:
           # Optional: Webhook
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
 
+          # Optional: Discord
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_USERNAME: ${{ secrets.DISCORD_USERNAME }}
+          DISCORD_AVATAR_URL: ${{ secrets.DISCORD_AVATAR_URL }}
+
           # Optional: Language (defaults to 'en' if not set)
           # Supported: en, zh, es, fr, ja, de, ko, pt, ru, ar, hi, it, nl
           # For multiple languages, separate with commas (e.g., 'en,zh,ja')
